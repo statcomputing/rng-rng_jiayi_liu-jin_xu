@@ -1,0 +1,244 @@
+---
+title: "STAT 5361 - Homework 3"
+# subtitle: "possible subtitle goes here"
+author:
+  - Jin Xu, Jiayi Liu
+date: "`r format(Sys.time(), '%d %B %Y')`"
+documentclass: article
+papersize: letter
+fontsize: 12pt
+bibliography: template.bib
+biblio-style: datalab
+keywords: Template, R Markdown, bookdown, Data Lab
+# keywords set in YAML header here only go to the properties of the PDF output
+# the keywords that appear in PDF output are set in latex/before_body.tex
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    pandoc_args: [
+      "--number-sections",
+      "--number-offset=1"
+    ]
+---
+
+
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+## some utility functions, see the source code for details
+source("utils_template.R")
+
+## specify the packages needed
+pkgs <- c("splines2", "DT", "webshot", "leaflet", "graphics")
+need.packages(pkgs)
+
+## external data can be read in by regular functions,
+## such as read.table or load
+
+## get output format in case something needs extra effort
+outFormat <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+## "latex" or "html"
+
+## for latex and html output
+isHtml <- identical(outFormat, "html")
+isLatex <- identical(outFormat, "latex")
+latex <- ifelse(isLatex, '\\LaTeX\\', 'LaTeX')
+
+## specify global chunk options
+knitr::opts_chunk$set(fig.width = 5, fig.height = 4, dpi = 300,
+                      out.width = "90%", fig.align = "center")
+
+```
+
+### Problem 1 {-}
+\begin{align}
+    &n(y_i - x_i^T\beta_j^{(k)};0,\sigma^{2(k)})\\
+    &= \dfrac{(2\pi)^{-d/2}}{\sqrt{|\sigma^{2k}|}}\exp\{(-\dfrac{1}{2}(y_i - x_i^T\beta_j^{(k)})(\sigma^2)_{k}^{-1}(y_i - x_i^T\beta_j^{(k)})\}\\
+    &Q(\Psi | \Psi^{(k)}) \\    
+    &= \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[(2\pi)^{-d/2}\pi_j^{(k)}] - \dfrac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln|\sigma^{2k}|- \dfrac{1}{2}\sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}(y_i - x_i^T\beta_j^{(k)})(\sigma^2)_{k}^{-1}(y_i - x_i^T\beta_j^{(k)}) \\
+    &= I_1 - \dfrac{I_2}{2} - \dfrac{I_3}{2} \\
+    &I_1 = \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[(2\pi)^{-d/2}\pi_j^{(k)}] \\
+    &I_2 = \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln|\sigma^{2k}| \\
+    &I_3 = \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}(y_i - x_i^T\beta_j^{(k)})(\sigma^2)_{k}^{-1}(y_i - x_i^T\beta_j^{(k)})\\
+    &\beta_j^{(k+1)} = \dfrac{\sum_{i=1}^{n}{\rm x}_iy_ip_{ij}^{(k+1)}}{\sum_{i=1}^{n}{\rm x}_i{\rm x}_i^{(T)}p_{ij}^{(k+1)}}, j=1, ..., m\\
+    &S_k = \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln|\sigma^{2k}| + \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}(y_i - x_i^T\beta_j^{(k)})(\sigma^2)_{k}^{-1}(y_i - x_i^T\beta_j^{(k)})\\
+    &\sigma^{2(k+1)} = \dfrac{\sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}(y_i - {\rm x}_i^T\beta_j^{(k+1)})^2}{n}\\
+    &I_1 = \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[(2\pi)^{-d/2}\pi_j^{(k)}]\\
+    &=\sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[(2\pi)^{-d/2}] + \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[\pi_j^{(k)}]\\
+    &=-(d/2) \ln(2\pi)\sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1} + \sum_{i=1}^{n}\sum_{j=1}^{m}p_{ij}^{k+1}\ln[\pi_j^{(k)}]\\
+    &\pi_j^{(k+1)}= \dfrac{\sum_{n}^{i=1}p_{ij}^{(k+1)}}{n}\\
+\end{align}
+
+### Problem 2 {-}
+
+### Problem 2(a) {-}
+
+We want $C \int_{0}^ \infty (2x^{\theta - 1}+x^{ \theta- \frac{1}{2} })*e^{-x}{ \rm d}x =1$ And we know that$\Gamma( \alpha)=\int_{0}^ \infty x^{\alpha - 1}*e^{-x}{ \rm d}x$. Therefore,
+\begin{align}
+    &C[ \int_{0}^ \infty 2x^{ \theta-1}*e^{-x}{ \rm d}x + \int_{0}^ \infty x^{ \theta- \frac{1}{2}}*e^{-x}{ \rm d}x]= C(2* \Gamma( \theta)+ \Gamma( \theta+ \frac{1}{2}))=1\\
+    &C= \frac{1}{2 \Gamma( \theta)+ \Gamma( \theta +\frac{1}{2})}\\
+    &g(x)= \frac{1}{2 \Gamma( \theta)+ \Gamma( \theta +\frac{1}{2})}(2x^{\theta - 1}*e^{-x}+x^{ \theta- \frac{1}{2} }*e^{-x})\\    
+    &=\frac{1}{2 \Gamma( \theta)+ \Gamma( \theta +\frac{1}{2})}(2 \Gamma( \theta)*f(x; \theta,1)+ \Gamma( \theta+ \frac{1}{2})*f(x; \theta + \frac{1}{2},1))\\
+    &= \frac{2 \Gamma( \theta)}{2 \Gamma( \theta)+ \Gamma( \theta +\frac{1}{2})}*f(x; \theta,1)+\frac{\Gamma( \theta+ \frac{1}{2})}{2 \Gamma( \theta)+ \Gamma( \theta +\frac{1}{2})}*f(x; \theta + \frac{1}{2},1)\\
+\end{align}
+
+f(x:$\theta$,1) is a gamma distribution with $\alpha=\theta;\beta=1$;
+
+f(x:$\theta+ \frac{1}{2}$,1) is a gammadistribution with $\alpha=\theta+\frac{1}{2};\beta=1$.
+
+So, $g(x)$ is a mixture of two Gamma distributions. The weights of these two distributions are shown in the fuction above.
+
+### Problem 2(b) {-}
+
+Frist, we set $\theta=3$. The weights for$f(x;\theta,1)$ and $f(x;\theta + \frac{1}{2},1)$ are $0.712155$ and $0.287845$ respectively.
+```{r}
+integrand1 <- function(x) {2*x^2*exp(-x)}
+integrand2 <- function(x) {x^(5/2)*exp(-x)}
+in1 <- (integrate(integrand1, lower = 0, upper = Inf))
+in2 <- (integrate(integrand2, lower = 0, upper = Inf))
+print(in1)
+print(in2)
+```
+```{r}
+N <- 10000
+components <- sample(1:2, prob=c(0.712155,0.287845),size=N,replace=TRUE)
+sps <- c(3, 7/2)
+samples <- rgamma(n=N,shape = sps[components])
+d1 <- density(samples)
+plot(d1,col="darkblue", main = "kernel density estimation and true density")
+curve((0.712155 * dgamma(x, 3) + 0.287845 * dgamma(x, 7/2)), col = "darkred", add = TRUE)
+legend('topright', c('sample density','true density'), lwd = 2, col = c('darkblue','darkred'))
+```
+
+### Problem 2(c) {-}
+
+```{r}
+
+# set theta = 3
+
+sample2 <- samples
+envelope2 <- function(x){
+  (0.712155 * dgamma(x, 3) + 0.287845 * dgamma(x, 7/2))
+}
+
+target2 <- function (x)
+{
+  (4 + x)^(1/2) * x^2* exp(-x)
+}
+accept = c()
+rejection_sampling <- function(sample2, envelope2, target2){
+  for(i in 1:length(sample2)){
+    U = runif(1,0,1)
+    if(envelope2(sample2[i])*U*1<= target2(sample2[i])) {
+      accept[i] = 'Yes'}
+    else {
+      accept[i] = 'No'
+    }
+  }
+}
+T2 <- data.frame(sample2, accept = 'Yes')
+hist(T2[,1][T2$accept=='Yes'], freq = FALSE, breaks = seq(0,20,0.5), main = 'estimated density of a random sample', xlab = 'X')
+lines(density(sample2), col = "darkblue")
+
+```
+
+
+### Problem 3 {-}
+
+### Problem 3(a) {-}
+
+Let U~Unif(0,1), for any $\theta, \beta >0$, $U^{1/\theta} \sim \rm Beta(\theta,1)$, $1-U^{1/\beta} \sim \rm Beta(1, \beta)$
+
+The density of the distributions are $g_\theta(x) = \theta x^{\theta-1}$, $g_\beta(x) = \beta (1-x)^{\beta-1}$
+
+Therefore, if $g(x)$ is a mixture of $g_\theta(x)$ and $g_\beta(x)$, $g(x) = p_1g_\theta(x) +p_2g_\beta(x)$, 
+
+$p_1 =\dfrac{1}{1+x^2}\rm B(\theta,1)$, 
+
+$p_2 =\sqrt{2+x^2} \rm B(1,\beta)$.
+
+Assume $\theta = 2$, $\beta=3$: 
+
+```{r}
+p1 <- beta(2,1)
+p2 <- beta(1,3)*3^(1/2)
+N3 <- 10000
+components3 <- sample(1:2, prob=c(p1,p2),size=N3,replace=TRUE)
+sps1 <- c(2, 1)
+sps2 <- c(1, 3)
+sample3 <- rbeta(n=N3,shape1=sps1[components3], shape2 = sps2[components3])
+envelope3 <- function(x){
+  dbeta(x,shape1=sps1[components3], shape2 = sps2[components3])
+}
+target3 <- function(x){
+  x/(1+x^2)+(2+x^2)^(1/2)*(1-x)^2
+}
+accept = c()
+rejection_sampling <- function(sample3, envelope3, target3){
+  for(i in 1:length(sample3)){
+    U = runif(1,0,1)
+    if(envelope3(sample3[i])*U <= target3(sample3[i])) {
+      accept[i] = 'Yes'}
+    else {
+      accept[i] = 'No'
+    }
+  }
+}
+T3 = data.frame(sample3, accept = 'Yes')
+plot(density(sample3),main="Estimated density of a random sample",col = "darkblue")
+```
+
+
+### Problem 3(b) {-}
+
+$p_1 =\dfrac{1}{1+x^2}\rm B(\theta,1)$, 
+
+$p_2 =\sqrt{2+x^2} \rm B(1,\beta)$.
+
+Assume $\theta = 2$, $\beta=3$: 
+
+```{r}
+p1 <- beta(2,1)
+p2 <- beta(1,3)*3^(1/2)
+p <- p1 + p2
+N <- 10000
+
+#Sample N random uniforms U
+U <- runif(N)
+
+#Variable to store the samples from the mixture distribution                                             
+rand.samples <- rep(NA,N)
+
+#Sampling from the mixture
+for(i in 1:N){
+    if (U[i] < p1/p) {
+        rand.samples[i] <- rbeta(1,2,1)
+    }else{
+        rand.samples[i] <- rbeta(1,1,3)
+    }
+}
+#rejection-sampling
+rejection_sampling <- function(rand.samples, envelope3, target3){
+  for(i in 1:length(rand.samples)){
+    U = runif(1,0,1)
+    if(envelope3(rand.samples[i])*U <= target3(rand.samples[i])) {
+      accept[i] = 'Yes'}
+    else {
+      accept[i] = 'No'
+    }
+  }
+}
+T4 <- data.frame(rand.samples, accept = 'Yes')
+#Density plot of the random samples
+
+plot(density(rand.samples),main="Density Estimate of the Mixture Model",col = "darkblue")
+```
+
+
+
+
+
+
+
+
+
+
